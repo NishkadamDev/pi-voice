@@ -1,31 +1,37 @@
 import speech_recognition as sr
 import pyttsx3
 import requests
+import re
+import time
 
 # ── Configuration ─────────────────────────────────────────────
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL = "gemma3:1b"
-WAKE_WORD = "hello"
 
-# Test to sync to gitbub number 2
 # ── Set up text-to-speech ──────────────────────────────────────
 engine = pyttsx3.init()
 engine.setProperty("rate", 165)
 engine.setProperty("volume", 1.0)
 
 def speak(text):
+    text = re.sub(r'\*+', '', text)
+    text = re.sub(r'#+\s?', '', text)
+    text = re.sub(r'`+', '', text)
+    text = re.sub(r'\[.*?\]\(.*?\)', '', text)
+    text = re.sub(r'\n+', ' ', text)
+    text = text.strip()
     print(f"🤖 Ace says: {text}\n")
     engine.say(text)
     engine.runAndWait()
 
 # ── Set up speech recognition ──────────────────────────────────
 recognizer = sr.Recognizer()
-mic = sr.Microphone(device_index=1)
+mic = sr.Microphone()
 
-def listen(timeout=5):
+def listen(timeout=10):
     with mic as source:
         try:
-            audio = recognizer.listen(source, timeout=timeout, phrase_time_limit=8)
+            audio = recognizer.listen(source, timeout=timeout, phrase_time_limit=20)
         except sr.WaitTimeoutError:
             return None
 
@@ -50,7 +56,7 @@ def ask_ollama(prompt):
         response.raise_for_status()
         return response.json().get("response", "I have no response.")
     except requests.exceptions.ConnectionError:
-        return "I can't reach Ollama. Make sure it's running with: ollama serve"
+        return "I can't reach Ollama. Make sure it's running with ollama serve"
     except Exception as e:
         return f"Something went wrong: {e}"
 
@@ -58,31 +64,20 @@ def ask_ollama(prompt):
 print("🎙️  Calibrating microphone...")
 with mic as source:
     recognizer.adjust_for_ambient_noise(source, duration=1)
+    recognizer.dynamic_energy_threshold = True
+    recognizer.pause_threshold = 4
 
-print(f"✅ Ace is ready! Say 'Ace' to wake me up.")
-print("   Press Ctrl+C to stop.\n")
-
+print("✅ Ace is ready! Just speak your question.")
+print("   Say 'goodbye' to quit. Press Ctrl+C to force stop.\n")
+speak("Hello! I'm ready. What would you like to know?")
+f
 while True:
     try:
-        print("💤 Waiting for wake word...")
-        heard = listen(timeout=10)
-
-        if heard is None:
-            continue
-
-        print(f"   Heard: {heard}")
-
-        if WAKE_WORD not in heard:
-            continue
-
-        print(f"✅ Wake word detected!")
-        speak("Yeah?")
-
-        print("👂 Listening for your question...")
-        question = listen(timeout=7)
+        print("👂 Listening...")
+        question = listen(timeout=10)
 
         if question is None:
-            speak("I didn't catch that. Say Ace again when you're ready.")
+            print("   Nothing heard, still listening...\n")
             continue
 
         print(f"🗣️  You asked: {question}\n")
@@ -93,6 +88,7 @@ while True:
 
         reply = ask_ollama(question)
         speak(reply)
+        time.sleep(1)
 
     except KeyboardInterrupt:
         print("\n👋 Ace signing off. Bye!")
