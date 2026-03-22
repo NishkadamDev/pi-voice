@@ -65,7 +65,7 @@ print("🎙️  Calibrating microphone...")
 with mic as source:
     recognizer.adjust_for_ambient_noise(source, duration=1)
     recognizer.dynamic_energy_threshold = True
-    recognizer.pause_threshold = 4
+    recognizer.pause_threshold = 1
 
 print("✅ Ace is ready! Just speak your question.")
 print("   Say 'goodbye' to quit. Press Ctrl+C to force stop.\n")
