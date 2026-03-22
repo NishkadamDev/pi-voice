@@ -70,7 +70,7 @@ with mic as source:
 print("✅ Ace is ready! Just speak your question.")
 print("   Say 'goodbye' to quit. Press Ctrl+C to force stop.\n")
 speak("Hello! I'm ready. What would you like to know?")
-f
+
 while True:
     try:
         print("👂 Listening...")
