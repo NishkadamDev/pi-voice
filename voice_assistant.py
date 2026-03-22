@@ -7,6 +7,7 @@ OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL = "gemma3:1b"
 WAKE_WORD = "hello"
 
+# Test to sync to gitbub
 # ── Set up text-to-speech ──────────────────────────────────────
 engine = pyttsx3.init()
 engine.setProperty("rate", 165)
