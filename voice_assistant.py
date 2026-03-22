@@ -47,10 +47,11 @@ def listen(timeout=10):
 # ── Send text to Ollama ────────────────────────────────────────
 def ask_ollama(prompt):
     print(f"🧠 Thinking ({MODEL})...")
+    short_prompt = f"Answer in one short sentence only, no lists, no markdown: {prompt}"
     try:
         response = requests.post(OLLAMA_URL, json={
             "model": MODEL,
-            "prompt": prompt,
+            "prompt": short_prompt,
             "stream": False
         })
         response.raise_for_status()
@@ -65,7 +66,7 @@ print("🎙️  Calibrating microphone...")
 with mic as source:
     recognizer.adjust_for_ambient_noise(source, duration=1)
     recognizer.dynamic_energy_threshold = True
-    recognizer.pause_threshold = 1
+    recognizer.pause_threshold = 4
 
 print("✅ Ace is ready! Just speak your question.")
 print("   Say 'goodbye' to quit. Press Ctrl+C to force stop.\n")
